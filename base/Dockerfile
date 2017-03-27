@@ -1,5 +1,7 @@
+# YouEarnedIt Ops ops@youearnedit.com
+#  Base Dockerfile
+
 FROM ubuntu:xenial
-MAINTAINER YouEarnedIt Ops
 
 # Upgrade and install packages
 ENV DEBIAN_FRONTEND noninteractive
