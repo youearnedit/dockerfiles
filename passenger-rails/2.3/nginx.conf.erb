@@ -1,0 +1,89 @@
+<%
+RAILS_ENV = ENV.fetch('RAILS_ENV', 'production')
+-%>
+worker_processes <%= ENV.fetch('NGINX_WORKER_COUNT', (RAILS_ENV == 'production' ? 'auto' : 1)) %>;
+pid /run/nginx.pid;
+daemon off;
+user docker;
+
+# Include global configs
+include /usr/src/nginx/main.d/*.conf;
+
+events {
+  worker_connections <%= ENV.fetch('NGINX_WORKER_CONNECTIONS', '1024') %>;
+}
+
+http {
+  # Logging
+  access_log /var/log/nginx/access.log; # symlinked to stderr
+  error_log  /var/log/nginx/error.log; # symlinked to stderr
+
+  # Set user
+  passenger_default_user docker;
+  passenger_user docker;
+
+  # Be more hidden
+  passenger_friendly_error_pages off;
+  passenger_show_version_in_header off;
+  more_clear_headers Server X-Page-Speed X-Powered-By X-CF-Powered-By;
+  server_tokens off;
+
+  # Passenger config
+  passenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;
+  passenger_ruby /usr/bin/ruby;
+  passenger_app_env <%= RAILS_ENV %>;
+  passenger_max_pool_size <%= ENV.fetch('PASSENGER_MAX_POOL_SIZE', '6') %>;
+  passenger_min_instances <%= ENV.fetch('PASSENGER_MIN_INSTANCES', '1') %>;
+  <% if ENV['APP_URL'] -%>
+  passenger_pre_start <% ENV['APP_URL'] -%>; # prevents the delay for the first user
+  <% end -%>
+
+  # Timeouts
+  client_body_timeout    65;
+  client_header_timeout  65;
+  keepalive_timeout      65;
+
+  # Upload size
+  client_max_body_size <%= ENV.fetch('NGINX_MAX_UPLOAD_SIZE', '10m') %>;
+
+  # MIME types
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
+
+  # Include additional nginx options
+  include /usr/src/nginx/conf.d/*.conf;
+
+  # Performance Helps
+  sendfile on;
+
+  server {
+    listen 80;
+    server_name default_server;   
+    root /usr/src/app/public;
+
+    # Set HSTS
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    #set_real_ip_from 10.0.0.0/8; # Restrict who can set real_ip_header
+    real_ip_header X-Forwarded-For; # Name of header with real ip
+    real_ip_recursive on;
+
+    location / {
+      passenger_enabled on;
+
+      # Include additional location block options
+      include /usr/src/nginx/location.d/*.conf;
+    }
+
+    # Match the health check path separately to prevent interference with the health check
+    #location /health-check {
+    #  passenger_enabled on;
+    #}
+
+    # Protect .git
+    location ~ /\.git {
+      deny all;
+    }
+
+  }
+}
