@@ -6,44 +6,47 @@ FROM youearnedit/base:latest
 # Set important vars
 ENV APP_HOME /usr/src/app/
 ENV RUBY_VERSION 2.3
-ENV BUNDLER_VERSION 1.13.7
+ENV BUNDLER_VERSION 1.15
 ENV NPM_CONFIG_LOGLEVEL info
 ENV NODE_VERSION 7.6.0
 ENV NPM_VERSION 4.3.0
+ENV YARN_VERSION 0.24.6
 
 # We'll have to do most of the install with root
 USER root
 
 # Create the app directory with perms
-RUN mkdir -p $APP_HOME
-RUN chown docker:docker $APP_HOME
-WORKDIR $APP_HOME
+RUN mkdir -p ${APP_HOME}
+RUN chown docker:docker ${APP_HOME}
+WORKDIR ${APP_HOME}
 
 ## ---- Ruby, Gem and Bundler Install ----
 
-# Install ruby and deps
+# Install ruby, and rails deps
 RUN apt-add-repository -y ppa:brightbox/ruby-ng \
  && apt-get update \
  && apt-get install -y \
-      ruby$RUBY_VERSION \
-      ruby$RUBY_VERSION-dev \
+      ruby${RUBY_VERSION} \
+      ruby${RUBY_VERSION}-dev \
+      # Rails timezone sources
+      tzdata \
  && rm -rf /var/lib/apt/lists/*
 
 # Install and setup bundler
-RUN gem install -i /var/lib/gems/$RUBY_VERSION.0 bundler -v $BUNDLER_VERSION
+RUN gem install -i /var/lib/gems/${RUBY_VERSION}.0 bundler -v ${BUNDLER_VERSION}
 ENV BUNDLE_APP_CONFIG /home/docker/.bundle
 
 # Setup the gem env as the docker user
 USER docker
 RUN echo "gem: --no-document" >> /home/docker/.gemrc \
- && mkdir -p /home/docker/.gem/ruby/$RUBY_VERSION.0/build_info \
-             /home/docker/.gem/ruby/$RUBY_VERSION.0/cache \
-             /home/docker/.gem/ruby/$RUBY_VERSION.0/doc \
-             /home/docker/.gem/ruby/$RUBY_VERSION.0/extensions \
-             /home/docker/.gem/ruby/$RUBY_VERSION.0/gems \
-             /home/docker/.gem/ruby/$RUBY_VERSION.0/specifications
-ENV GEM_HOME /home/docker/.gem/ruby/$RUBY_MAJOR.0
-ENV PATH $GEM_HOME/bin:$PATH
+ && mkdir -p /home/docker/.gem/ruby/${RUBY_VERSION}.0/build_info \
+             /home/docker/.gem/ruby/${RUBY_VERSION}.0/cache \
+             /home/docker/.gem/ruby/${RUBY_VERSION}.0/doc \
+             /home/docker/.gem/ruby/${RUBY_VERSION}.0/extensions \
+             /home/docker/.gem/ruby/${RUBY_VERSION}.0/gems \
+             /home/docker/.gem/ruby/${RUBY_VERSION}.0/specifications
+ENV GEM_HOME /home/docker/.gem/ruby/${RUBY_MAJOR}.0
+ENV PATH ${GEM_HOME}/bin:${PATH}
 USER root
 
 ## ---- Node Install ----
@@ -61,19 +64,27 @@ RUN set -ex \
     C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
     56730D5401028683275BD23C23EFEFE93C4CFFFE \
   ; do \
-    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+    gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "${key}"; \
   done
 
 # Download, verify and install node
-RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.xz" \
- && curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
+RUN curl -SLO "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" \
+ && curl -SLO "https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt.asc" \
  && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
- && grep "node-v$NODE_VERSION-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
- && tar -xJf "node-v$NODE_VERSION-linux-x64.tar.xz" -C /usr/local --strip-components=1 \
- && rm "node-v$NODE_VERSION-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
+ && grep "node-v${NODE_VERSION}-linux-x64.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
+ && tar -xJf "node-v${NODE_VERSION}-linux-x64.tar.xz" -C /usr/local --strip-components=1 \
+ && rm "node-v${NODE_VERSION}-linux-x64.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
  && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
- && npm install -g npm@"$NPM_VERSION" \
+ && npm install -g npm@"${NPM_VERSION}" \
  && npm cache clear
+
+## ---- Yarn Install ----
+
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - \
+ && echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list \
+ && apt-get update \
+ && apt-get install -y yarn=${YARN_VERSION}\* \
+ && rm -rf /var/lib/apt/lists/*
 
 ## ---- Passenger Install ----
 
@@ -105,6 +116,8 @@ RUN chown docker:docker -R /usr/src/nginx
 # Link stderr / stdout to nginx error / access logs
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
+
+## ---- Setup final things and run ----
 
 # Setup entrypoint script
 COPY entrypoint.sh /usr/src/entrypoint.sh
