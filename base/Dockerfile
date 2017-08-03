@@ -15,6 +15,8 @@ RUN apt-get update \
       language-pack-en \
       locales \
       psmisc \
+      python-pip \
+      python-setuptools \
       software-properties-common \
       sudo \
  && rm -rf /var/lib/apt/lists/*
@@ -29,6 +31,12 @@ RUN locale-gen en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 RUN dpkg-reconfigure locales
+
+# Update pip and setuptools
+RUN pip install --upgrade pip setuptools
+
+# Install the awscli
+RUN pip install --upgrade --user awscli
 
 # Become the docker user
 USER docker
