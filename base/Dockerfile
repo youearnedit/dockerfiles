@@ -36,7 +36,7 @@ RUN dpkg-reconfigure locales
 RUN pip install --upgrade pip setuptools
 
 # Install the awscli
-RUN pip install --upgrade --user awscli
+RUN pip install awscli
 
 # Become the docker user
 USER docker
