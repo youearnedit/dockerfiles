@@ -71,14 +71,22 @@ http {
     location / {
       passenger_enabled on;
 
+      <% if ENV.key? 'FORCE_SSL' %>
+      if ($http_x_forwarded_proto != 'https') {
+        return 301 https://$host$request_uri;
+      }
+      <% end %>
+      
       # Include additional location block options
       include /usr/src/nginx/location.d/*.conf;
     }
 
-    # Match the health check path separately to prevent interference with the health check
-    #location /health-check {
-    #  passenger_enabled on;
-    #}
+    <% if ENV.key? 'FORCE_SSL' %>
+    # Match the health check path separately to allow it over non-ssl 
+    location <%= ENV.fetch('HEALTH_CHECK_PATH', '/health-check') %> {
+      passenger_enabled on;
+    }
+    <% end %>
 
     # Protect .git
     location ~ /\.git {
