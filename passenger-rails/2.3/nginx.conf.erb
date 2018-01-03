@@ -58,15 +58,14 @@ http {
 
   server {
     listen 80;
-    server_name default_server;   
+    server_name default_server;
     root /usr/src/app/public;
 
     # Set HSTS
     add_header Strict-Transport-Security "max-age=31536000" always;
 
-    #set_real_ip_from 10.0.0.0/8; # Restrict who can set real_ip_header
+    set_real_ip_from 10.0.0.0/8; # Restrict who can set real_ip_header
     real_ip_header X-Forwarded-For; # Name of header with real ip
-    real_ip_recursive on;
 
     location / {
       passenger_enabled on;
@@ -76,13 +75,23 @@ http {
         return 301 https://$host$request_uri;
       }
       <% end %>
-      
+
       # Include additional location block options
       include /usr/src/nginx/location.d/*.conf;
     }
 
+    # Serve assets from nginx with CORS
+    location ~ ^/assets/ {
+      gzip_static on;
+      expires max;
+      add_header Cache-Control public;
+      add_header ETag "";
+      add_header Access-Control-Allow-Origin *;
+      add_header Access-Control-Request-Method *;
+    }
+
     <% if ENV.key? 'FORCE_SSL' %>
-    # Match the health check path separately to allow it over non-ssl 
+    # Match the health check path separately to allow it over non-ssl
     location <%= ENV.fetch('HEALTH_CHECK_PATH', '/health-check') %> {
       passenger_enabled on;
     }
