@@ -71,9 +71,19 @@ http {
       passenger_enabled on;
 
       <% if ENV.key? 'FORCE_SSL' %>
-      if ($http_x_forwarded_proto != 'https') {
-        return 301 https://$host$request_uri;
-      }
+        js_set $redirectUrl "
+          var url;
+
+          if ($r.headers.http_x_forwarded_proto != 'https') {
+            if (!$r.headers.host.endsWith('youearnedit.com')){
+              url = https://login.youearnedit.com/users/sign_in;
+            } else {
+              url = https://$r.headers.host$r.uri
+            }
+          }
+        ";
+
+        redirect 301 $redirectUrl;
       <% end %>
 
       # Include additional location block options
