@@ -64,6 +64,12 @@ http {
 
   server {
     listen 80;
+    server_name staging.youearnedit.com;
+    return 301 https://stage.youearnedit.com/;
+  }
+
+  server {
+    listen 80;
     server_name default_server;
     root /usr/src/app/public;
 
