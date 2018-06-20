@@ -57,20 +57,8 @@ http {
   sendfile on;
 
   server {
-    listen 80;
-    server_name stageing.youearnedit.com;
-    return 301 https://stage.youearnedit.com/;
-  }
-
-  server {
-    listen 80;
-    server_name staging.youearnedit.com;
-    return 301 https://stage.youearnedit.com/;
-  }
-
-  server {
-    listen 80;
-    server_name default_server;
+    listen 80 default_server;
+    server_name _;
     root /usr/src/app/public;
 
     # Set HSTS
