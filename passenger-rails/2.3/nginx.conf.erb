@@ -57,8 +57,8 @@ http {
   sendfile on;
 
   server {
-    listen 80;
-    server_name default_server;
+    listen 80 default_server;
+    server_name _;
     root /usr/src/app/public;
 
     # Set HSTS
