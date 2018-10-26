@@ -90,6 +90,12 @@ http {
       add_header Access-Control-Request-Method *;
     }
 
+    location ~ ^/.well_known/ {
+      root /usr/src/app/public/.well_known;
+      gzip_static on;
+    }
+
+
     <% if ENV.key? 'FORCE_SSL' %>
     # Match the health check path separately to allow it over non-ssl
     location <%= ENV.fetch('HEALTH_CHECK_PATH', '/health-check') %> {
