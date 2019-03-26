@@ -52,6 +52,7 @@ USER root
 ## ---- Node Install ----
 
 # Add Node GPG keys
+RUN mkdir ~/.gnupg && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf
 RUN set -ex \
  && for key in \
     9554F04D7259F04124DE6B476D5A82AC7E37093B \
@@ -90,7 +91,7 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - \
 
 # Install Passenger with Nginx
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7 \
- && echo "deb https://oss-binaries.phusionpassenger.com/apt/passenger xenial main" > /etc/apt/sources.list.d/passenger.list \
+ && echo "deb https://oss-binaries.phusionpassenger.com/apt/passenger bionic main" > /etc/apt/sources.list.d/passenger.list \
  && apt-get update \
  && apt-get install -y --no-install-recommends nginx-extras passenger \
  && rm -rf /var/lib/apt/lists/*
