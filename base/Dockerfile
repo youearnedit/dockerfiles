@@ -1,7 +1,7 @@
 # YouEarnedIt Ops ops@youearnedit.com
 #  Base Dockerfile
 
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 
 # Upgrade and install packages
 ENV DEBIAN_FRONTEND noninteractive
