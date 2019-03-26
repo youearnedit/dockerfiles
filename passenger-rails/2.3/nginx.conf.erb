@@ -19,7 +19,7 @@ http {
   error_log  /var/log/nginx/error.log; # symlinked to stderr
 
   # Set user
-  # passenger_default_user docker;
+  passenger_default_user docker;
   passenger_user docker;
 
   # Be more hidden
