@@ -6,25 +6,27 @@ FROM ubuntu:bionic
 # Upgrade and install packages
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-      apt-transport-https \
-      build-essential \
-      ca-certificates \
-      curl \
-      git \
-      language-pack-en \
-      locales \
-      psmisc \
-      python-pip \
-      python-setuptools \
-      software-properties-common \
-      sudo \
- && rm -rf /var/lib/apt/lists/*
+     && apt-get install -y --no-install-recommends \
+     apt-transport-https \
+     build-essential \
+     ca-certificates \
+     curl \
+     git \
+     language-pack-en \
+     locales \
+     psmisc \
+     python-pip \
+     python-setuptools \
+     software-properties-common \
+     sudo \
+     dirmngr \
+     gpg-agent \
+     && rm -rf /var/lib/apt/lists/*
 
 # Setup the docker user
 RUN addgroup --gid 9999 docker \
- && adduser --uid 9999 --gid 9999 --disabled-password --gecos "Docker User" docker \
- && usermod -L docker
+     && adduser --uid 9999 --gid 9999 --disabled-password --gecos "Docker User" docker \
+     && usermod -L docker
 
 # Setup the locale options
 RUN locale-gen en_US.UTF-8
