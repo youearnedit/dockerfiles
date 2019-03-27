@@ -51,7 +51,7 @@ USER root
 
 ## ---- Node Install ----
 
-RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}} | bash - && apt-get install -y nodejs \
+RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - && apt-get install -y nodejs \
  && npm install -g npm@"${NPM_VERSION}" \
  && npm cache clear
 
