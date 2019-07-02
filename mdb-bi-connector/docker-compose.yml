@@ -1,0 +1,25 @@
+version: '2'
+services:
+  mdb-bi-connector:
+    build : .
+    networks:
+      - dockernet
+    ports:
+      - 3307:3307
+    command: run.sh
+    environment:
+      MONGO_AUTH: 1
+      MONGO_HOST : "${MONGODB_HOST}"
+      MONGO_PORT : "${MONGODB_PORT}"
+      SAMPLING_USER : "${MONGODB_SAMPLING_USER}"
+      SAMPLING_PASS : "${MONGODB_SAMPLING_PASS}"
+      BI_CONNECTOR_VERSION : "${BI_CONNECTOR_VERSION}"
+      ADDR : mdb-bi-connector:3307
+
+networks:
+  dockernet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
