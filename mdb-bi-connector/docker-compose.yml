@@ -1,3 +1,4 @@
+# This should only be used on local
 version: '2'
 services:
   mdb-bi-connector:
