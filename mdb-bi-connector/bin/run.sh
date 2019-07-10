@@ -2,7 +2,7 @@
 
 set -m
 
-MONGO_URI="mongodb://${MONGO_HOST}:${MONGO_PORT}"
+MONGO_URI="mongodb://${MONGO_HOST}:${MONGO_PORT}/?readPreference=secondary"
 service rsyslog start
 mkfifo mdb-bi-connector.log
 echo "starting connector application"
