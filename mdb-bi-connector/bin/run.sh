@@ -4,7 +4,6 @@ set -m
 
 MONGO_URI="mongodb://${MONGO_HOST}:${MONGO_PORT}/?readPreference=secondary"
 service rsyslog start
-mkfifo mdb-bi-connector.log
 echo "starting connector application"
 #Concatenate the cert and key together
 cat ${SSL_CERT_FILE} >> /combined.pem
