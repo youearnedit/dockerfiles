@@ -2,7 +2,7 @@
 
 set -m
 
-MONGO_URI="mongodb://${MONGO_HOST}:${MONGO_PORT}/?readPreference=secondary"
+MONGO_URI="mongodb://${MONGO_HOST}:${MONGO_PORT}/?readPreference=secondary&replicaSet=${REPLICA_SET}"
 service rsyslog start
 echo "starting connector application"
 #Concatenate the cert and key together
