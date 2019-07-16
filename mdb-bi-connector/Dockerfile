@@ -1,5 +1,5 @@
 FROM debian:stretch
-MAINTAINER Matthias Granberry <matthias.granberry@youearnedit.com>
+
 ENV BI_CONNECTOR_VERSION=2.10.0
 
 RUN apt-get update
