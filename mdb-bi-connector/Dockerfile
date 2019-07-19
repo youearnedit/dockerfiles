@@ -13,4 +13,4 @@ RUN chmod -R 755 /usr/local/bin
 RUN chmod -R 755 /opt
 
 EXPOSE 3307
-CMD service rsyslog start && su -c run.sh docker
+CMD service rsyslog start && su -p -c run.sh docker
