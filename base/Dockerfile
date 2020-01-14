@@ -14,6 +14,7 @@ RUN apt-get update \
       git \
       language-pack-en \
       locales \
+      gnupg2 \
       psmisc \
       python-pip \
       python-setuptools \
