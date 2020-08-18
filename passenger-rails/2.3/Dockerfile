@@ -21,6 +21,7 @@ RUN chown docker:docker ${APP_HOME}
 WORKDIR ${APP_HOME}
 
 ## ---- Ruby, Gem and Bundler Install ----
+
 # Install ruby, and rails deps
 RUN apt-add-repository -y ppa:brightbox/ruby-ng \
  && apt-get update \
