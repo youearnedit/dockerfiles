@@ -6,11 +6,11 @@ FROM youearnedit/base:latest
 # Set important vars
 ENV APP_HOME /usr/src/app/
 ENV RUBY_VERSION 2.3
-ENV BUNDLER_VERSION 1.15
+ENV BUNDLER_VERSION 1.17.3
 ENV NPM_CONFIG_LOGLEVEL info
 ENV NODE_VERSION 8.x
 ENV NPM_VERSION 4.3.0
-ENV YARN_VERSION 0.24.6
+ENV YARN_VERSION 1.22.4
 
 # We'll have to do most of the install with root
 USER root
