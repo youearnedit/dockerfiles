@@ -34,3 +34,5 @@ RUN chown -R docker:docker $APP_HOME
 USER docker
 CMD ["/usr/src/entrypoint.sh"]
 ```
+
+For ruby 2.4 substitute the image name with passenger-rails2.4:latest
