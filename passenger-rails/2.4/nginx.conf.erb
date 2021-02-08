@@ -1,0 +1,131 @@
+<%
+RAILS_ENV = ENV.fetch('RAILS_ENV', 'production')
+-%>
+worker_processes <%= ENV.fetch('NGINX_WORKER_COUNT', (RAILS_ENV == 'production' ? 'auto' : 1)) %>;
+pid /run/nginx.pid;
+daemon off;
+user docker;
+
+# Include global configs
+include /usr/src/nginx/main.d/*.conf;
+
+events {
+  worker_connections <%= ENV.fetch('NGINX_WORKER_CONNECTIONS', '1024') %>;
+}
+
+http {
+  # Logging
+  access_log /var/log/nginx/access.log; # symlinked to stderr
+  error_log  /var/log/nginx/error.log; # symlinked to stderr
+
+  # Set user
+  passenger_default_user docker;
+  passenger_user docker;
+
+  # Be more hidden
+  passenger_friendly_error_pages off;
+  passenger_show_version_in_header off;
+  more_clear_headers Server X-Page-Speed X-Powered-By X-CF-Powered-By;
+  server_tokens off;
+
+  # Passenger config
+  passenger_root /usr/lib/ruby/vendor_ruby/phusion_passenger/locations.ini;
+  passenger_ruby /usr/bin/ruby;
+  passenger_app_env <%= RAILS_ENV %>;
+  passenger_disable_log_prefix on;
+  passenger_max_pool_size <%= ENV.fetch('PASSENGER_MAX_POOL_SIZE', '12') %>;
+  passenger_min_instances <%= ENV.fetch('PASSENGER_MIN_INSTANCES', '2') %>;
+  <% if ENV['APP_URL'] -%>
+  passenger_pre_start <% ENV['APP_URL'] -%>; # prevents the delay for the first user
+  <% end -%>
+
+  # Timeouts
+  client_body_timeout    65;
+  client_header_timeout  65;
+  keepalive_timeout      65;
+
+  # Upload size
+  client_max_body_size <%= ENV.fetch('NGINX_MAX_UPLOAD_SIZE', '10m') %>;
+
+  # MIME types
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
+
+  # Include additional nginx options
+  include /usr/src/nginx/conf.d/*.conf;
+
+  # Performance Helps
+  sendfile on;
+
+  server {
+    listen 80 default_server;
+    server_name _;
+    root /usr/src/app/public;
+
+    # Set HSTS
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+    set_real_ip_from 10.0.0.0/8; # Restrict who can set real_ip_header
+    real_ip_header X-Forwarded-For; # Name of header with real ip
+
+    location / {
+      passenger_enabled on;
+
+      <% if ENV.key? 'FORCE_SSL' %>
+      if ($http_x_forwarded_proto != 'https') {
+        return 301 https://$host$request_uri;
+      }
+      <% end %>
+
+      # Include additional location block options
+      include /usr/src/nginx/location.d/*.conf;
+    }
+
+    # Serve assets from nginx with CORS
+    location ~ ^/assets/ {
+      gzip  on;
+      gzip_http_version 1.0;
+      gzip_comp_level 2;
+      gzip_min_length 1100;
+      gzip_buffers     4 8k;
+      gzip_proxied any;
+      gzip_static on;
+      gzip_types
+        # text/html is always compressed by HttpGzipModule
+        text/css
+        text/javascript
+        text/xml
+        text/plain
+        text/x-component
+        application/javascript
+        application/json
+        application/xml
+        application/rss+xml
+        font/truetype
+        font/opentype
+        application/vnd.ms-fontobject
+        image/svg+xml;
+      gzip_proxied        expired no-cache no-store private auth;
+      gzip_disable        "MSIE [1-6]\.";
+      gzip_vary           on;
+      expires max;
+      add_header Cache-Control public;
+      add_header ETag "";
+      add_header Access-Control-Allow-Origin *;
+      add_header Access-Control-Request-Method *;
+    }
+
+    <% if ENV.key? 'FORCE_SSL' %>
+    # Match the health check path separately to allow it over non-ssl
+    location <%= ENV.fetch('HEALTH_CHECK_PATH', '/health-check') %> {
+      passenger_enabled on;
+    }
+    <% end %>
+
+    # Protect .git
+    location ~ /\.git {
+      deny all;
+    }
+
+  }
+}
