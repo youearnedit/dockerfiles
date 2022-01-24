@@ -1,7 +1,7 @@
 # YouEarnedIt Ops ops@youearnedit.com
 #  PassengerRails 2.3 Dockerfile
 
-FROM youearnedit/base:latest
+FROM gcr.io/kazoo-infrastructure/ubuntu:xenial
 
 # Set important vars
 ENV APP_HOME /usr/src/app/
