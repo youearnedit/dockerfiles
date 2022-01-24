@@ -1,7 +1,7 @@
 # YouEarnedIt Ops ops@youearnedit.com
 #  Base Dockerfile
 
-FROM ubuntu:xenial
+FROM ubuntu:xenial-20210804
 
 # Upgrade and install packages
 ENV DEBIAN_FRONTEND noninteractive
@@ -17,6 +17,7 @@ RUN apt-get update \
       gnupg2 \
       psmisc \
       python-pip \
+      unzip \
       python-setuptools \
       software-properties-common \
       sudo \
@@ -33,11 +34,8 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 RUN dpkg-reconfigure locales
 
-# Update pip and setuptools
-RUN pip install --upgrade pip setuptools
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
 
-# Install the awscli
-RUN pip install awscli
 
 # Become the docker user
 USER docker
