@@ -1,7 +1,7 @@
 # YouEarnedIt Ops ops@youearnedit.com
 #  PassengerRails 2.3 Dockerfile
 
-FROM gcr.io/kazoo-infrastructure/ubuntu:xenial
+FROM gcr.io/kazoo-infrastructure/ubuntu@sha256:5eadc2a60a3a5d555b837e0280d180501c35ff416da08ea8c9b7a781823c7f9e
 
 # Set important vars
 ENV APP_HOME /usr/src/app/
