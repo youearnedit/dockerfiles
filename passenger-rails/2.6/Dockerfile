@@ -1,8 +1,7 @@
 # YouEarnedIt Ops ops@youearnedit.com
 #  PassengerRails 2.6 Dockerfile
 
-# TODO: Get the base Focal image built and use that instead of this local alias
-FROM yeibase 
+FROM gcr.io/kazoo-infrastructure/ubuntu@sha256:d3fb20fb65d4abdb177911d5908a1d45981f89a8
 
 
 # Set important vars
