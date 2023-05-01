@@ -1,16 +1,18 @@
 # YouEarnedIt Ops ops@youearnedit.com
-#  PassengerRails 2.3 Dockerfile
+#  PassengerRails 2.6 Dockerfile
 
-FROM gcr.io/kazoo-infrastructure/ubuntu@sha256:5eadc2a60a3a5d555b837e0280d180501c35ff416da08ea8c9b7a781823c7f9e
+# TODO: Get the base Focal image built and use that instead of this local alias
+FROM yeibase 
+
 
 # Set important vars
 ENV APP_HOME /usr/src/app/
-ENV RUBY_VERSION 2.3
+ENV RUBY_VERSION 2.6
 ENV BUNDLER_VERSION 1.17.3
 ENV NPM_CONFIG_LOGLEVEL info
-ENV NODE_VERSION 8.x
-ENV NPM_VERSION 4.3.0
-ENV YARN_VERSION 1.22.4
+ENV NODE_VERSION 10.x
+ENV NPM_VERSION 6.14.1
+ENV YARN_VERSION 1.22.19
 
 # We'll have to do most of the install with root
 USER root
@@ -52,8 +54,7 @@ USER root
 ## ---- Node Install ----
 
 RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - && apt-get install -y nodejs \
- && npm install -g npm@"${NPM_VERSION}" \
- && npm cache clear
+ && npm install -g npm@"${NPM_VERSION}"
 
 ## ---- Yarn Install ----
 
@@ -67,13 +68,10 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - \
 
 # Install Passenger with Nginx
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7 \
- && echo "deb https://oss-binaries.phusionpassenger.com/apt/passenger xenial main" > /etc/apt/sources.list.d/passenger.list \
+ && echo "deb https://oss-binaries.phusionpassenger.com/apt/passenger focal main" > /etc/apt/sources.list.d/passenger.list \
  && apt-get update \
- && apt-get install -y --no-install-recommends nginx-extras passenger \
+ && apt-get install -y nginx-extras passenger libnginx-mod-http-passenger \
  && rm -rf /var/lib/apt/lists/*
-
-# Let the docker user run nginx with ENV VARs
-RUN echo "docker ALL=(ALL) NOPASSWD: SETENV: /usr/sbin/nginx" >> /etc/sudoers
 
 # Setup Passenger native support as the docker user
 USER docker
@@ -86,6 +84,9 @@ RUN mkdir -p /usr/src/nginx/conf.d \
              /usr/src/nginx/main.d
 COPY nginx.conf.erb /usr/src/nginx/nginx.conf.erb
 COPY main.d/* /usr/src/nginx/main.d/
+
+RUN if [ ! -f /etc/nginx/modules-enabled/50-mod-http-passenger.conf ]; then ln -s /usr/share/nginx/modules-available/mod-http-passenger.load /etc/nginx/modules-enabled/50-mod-http-passenger.conf ; fi
+RUN ls /etc/nginx/conf.d/mod-http-passenger.conf
 
 # Ensure Nginx config dir owned by the docker user
 RUN chown docker:docker -R /usr/src/nginx
@@ -102,4 +103,4 @@ CMD ["/usr/src/entrypoint.sh"]
 
 # Become the docker user and GO!
 USER docker
-EXPOSE 80
+EXPOSE 8080

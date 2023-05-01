@@ -14,4 +14,4 @@ for file in /usr/src/nginx/{,**/}*.erb; do
 done
 
 # Now run nginx
-exec sudo -E /usr/sbin/nginx -c /usr/src/nginx/nginx.conf
+exec /usr/sbin/nginx -c /usr/src/nginx/nginx.conf
