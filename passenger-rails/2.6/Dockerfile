@@ -1,7 +1,7 @@
 # YouEarnedIt Ops ops@youearnedit.com
 #  PassengerRails 2.6 Dockerfile
 
-FROM gcr.io/kazoo-infrastructure/ubuntu@sha256:d3fb20fb65d4abdb177911d5908a1d45981f89a8
+FROM gcr.io/kazoo-infrastructure/ubuntu:d3fb20fb65d4abdb177911d5908a1d45981f89a8
 
 
 # Set important vars
