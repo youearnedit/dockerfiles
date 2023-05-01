@@ -1,7 +1,7 @@
 # YouEarnedIt Ops ops@youearnedit.com
 #  Base Dockerfile
+FROM ubuntu:focal-20230412
 
-FROM ubuntu:xenial-20210804
 
 # Upgrade and install packages
 ENV DEBIAN_FRONTEND noninteractive
@@ -16,7 +16,7 @@ RUN apt-get update \
       locales \
       gnupg2 \
       psmisc \
-      python-pip \
+      python-pip-whl \
       unzip \
       python-setuptools \
       software-properties-common \
